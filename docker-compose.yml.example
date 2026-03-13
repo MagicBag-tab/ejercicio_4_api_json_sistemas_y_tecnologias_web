@@ -3,6 +3,6 @@ services:
     build: .
     container_name: go-server
     ports:
-      - "24347:80"
+      - "24347:24347"
     volumes:
       - .:/app
