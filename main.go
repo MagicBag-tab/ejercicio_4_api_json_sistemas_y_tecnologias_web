@@ -1,3 +1,5 @@
+package main
+
 import (
 	"database/sql"
 	"encoding/json"
@@ -5,18 +7,18 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
- 
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
 // Estructuras para representar los datos de géneros
 type Genre struct {
-	ID     int    `json:"id"`
-	Name   string `json:"name"`
-	Origin string `json:"origin"`
-	Decade int    `json:"decade"`
-	Mood   string `json:"mood"`
-	Tempo  string `json:"tempo"`
+	ID          int    `json:"id"`
+	Name        string `json:"name"`
+	Origin      string `json:"origin"`
+	Decade      int    `json:"decade"`
+	Mood        string `json:"mood"`
+	Tempo       string `json:"tempo"`
 	Description string `json:"description"`
 }
 
@@ -24,10 +26,7 @@ type Message struct {
 	Message string `json:"message"`
 }
 
-var genres []Genre
-
 var db *sql.DB
-
 
 // Main
 func main() {
@@ -38,7 +37,7 @@ func main() {
 	http.HandleFunc("/api/genres", genresHandler)
 
 	log.Println("Server running on :24347")
-    log.Fatal(http.ListenAndServe(":24347", nil))
+	log.Fatal(http.ListenAndServe(":24347", nil))
 }
 
 // Función para obtener la data del db de Music
@@ -54,25 +53,23 @@ func loadMusic() {
 	log.Println("Connected to music.db")
 }
 
-
 func pingHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, Message{Message: "pong"})
 }
- 
-// Handler para /api/genres 
+
+// Handler para /api/genres
 func genresHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
-		case http.MethodGet:
-			handleGetGenres(w, r)
-		case http.MethodPost:
-			handleCreateGenre(w, r)
-		default:
-			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
-		}
-		return
+	case http.MethodGet:
+		handleGetGenres(w, r)
+	case http.MethodPost:
+		handleCreateGenre(w, r)
+	default:
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+	}
 }
 
-// Función para manejar GET /api/genres
+// Función para manejar GET /api/genres y GET /api/genres?id=1
 func handleGetGenres(w http.ResponseWriter, r *http.Request) {
 	idParam := r.URL.Query().Get("id")
 	if idParam != "" {
@@ -84,14 +81,14 @@ func handleGetGenres(w http.ResponseWriter, r *http.Request) {
 		handleGetGenreByID(w, id)
 		return
 	}
- 
+
 	rows, err := db.Query("SELECT id, name, origin, decade, mood, tempo, description FROM genres ORDER BY id")
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
- 
+
 	var genres []Genre
 	for rows.Next() {
 		var g Genre
@@ -99,6 +96,22 @@ func handleGetGenres(w http.ResponseWriter, r *http.Request) {
 		genres = append(genres, g)
 	}
 	writeJSON(w, http.StatusOK, genres)
+}
+
+// Función para manejar GET /api/genres?id=1 (buscar por ID)
+func handleGetGenreByID(w http.ResponseWriter, id int) {
+	var g Genre
+	err := db.QueryRow("SELECT id, name, origin, decade, mood, tempo, description FROM genres WHERE id = ?", id).
+		Scan(&g.ID, &g.Name, &g.Origin, &g.Decade, &g.Mood, &g.Tempo, &g.Description)
+	if err == sql.ErrNoRows {
+		http.Error(w, "Genre not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	writeJSON(w, http.StatusOK, g)
 }
 
 // Función para crear un nuevo género con POST /api/genres
@@ -132,7 +145,7 @@ func handleCreateGenre(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "description is required", http.StatusBadRequest)
 		return
 	}
- 
+
 	res, err := db.Exec(
 		"INSERT INTO genres (name, origin, decade, mood, tempo, description) VALUES (?, ?, ?, ?, ?, ?)",
 		g.Name, g.Origin, g.Decade, g.Mood, g.Tempo, g.Description,
