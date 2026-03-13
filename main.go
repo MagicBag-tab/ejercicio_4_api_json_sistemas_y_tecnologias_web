@@ -17,6 +17,7 @@ type Genre struct {
 	Decade int    `json:"decade"`
 	Mood   string `json:"mood"`
 	Tempo  string `json:"tempo"`
+	Description string `json:"description"`
 }
 
 type Message struct {
@@ -34,6 +35,10 @@ func main() {
 	defer db.Close()
 
 	http.HandleFunc("/api/ping", pingHandler)
+	http.HandleFunc("/api/genres", genresHandler)
+
+	log.Println("Server running on :24347")
+    log.Fatal(http.ListenAndServe(":24347", nil))
 }
 
 // Función para obtener la data del db de Music
@@ -58,7 +63,7 @@ func pingHandler(w http.ResponseWriter, r *http.Request) {
 func genresHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 		case http.MethodGet:
-			handleGetGenre(w, r)
+			handleGetGenres(w, r)
 		case http.MethodPost:
 			handleCreateGenre(w, r)
 		default:
