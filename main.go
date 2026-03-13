@@ -36,8 +36,8 @@ func main() {
 	http.HandleFunc("/api/ping", pingHandler)
 	http.HandleFunc("/api/genres/", genresHandler) 
 
-	log.Println("Server running on :80")
-	log.Fatal(http.ListenAndServe(":80", nil))
+	log.Println("Server running on :24347")
+	log.Fatal(http.ListenAndServe(":24347", nil))
 }
 
 // Función para conectar a la base de datos
