@@ -34,7 +34,8 @@ func main() {
 	defer db.Close()
 
 	http.HandleFunc("/api/ping", pingHandler)
-	http.HandleFunc("/api/genres/", genresHandler) 
+	http.HandleFunc("/api/genres", genresHandler)
+	http.HandleFunc("/api/genres/", genresHandler)
 
 	log.Println("Server running on :24347")
 	log.Fatal(http.ListenAndServe(":24347", nil))
