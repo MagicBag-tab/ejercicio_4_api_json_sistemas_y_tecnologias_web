@@ -37,7 +37,7 @@ func main() {
 	http.HandleFunc("/api/genres", genresHandler)
 
 	log.Println("Server running on :24347")
-	log.Fatal(http.ListenAndServe(":24347", nil))
+	log.Fatal(http.ListenAndServe(":80", nil))
 }
 
 // Función para obtener la data del db de Music
