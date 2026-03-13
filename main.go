@@ -71,6 +71,35 @@ func genresHandler(w http.ResponseWriter, r *http.Request) {
 		return
 }
 
+// Función para manejar GET /api/genres
+func handleGetGenres(w http.ResponseWriter, r *http.Request) {
+	idParam := r.URL.Query().Get("id")
+	if idParam != "" {
+		id, err := strconv.Atoi(idParam)
+		if err != nil {
+			http.Error(w, "Invalid id parameter", http.StatusBadRequest)
+			return
+		}
+		handleGetGenreByID(w, id)
+		return
+	}
+ 
+	rows, err := db.Query("SELECT id, name, origin, decade, mood, tempo, description FROM genres ORDER BY id")
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+ 
+	var genres []Genre
+	for rows.Next() {
+		var g Genre
+		rows.Scan(&g.ID, &g.Name, &g.Origin, &g.Decade, &g.Mood, &g.Tempo, &g.Description)
+		genres = append(genres, g)
+	}
+	writeJSON(w, http.StatusOK, genres)
+}
+
 func writeJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
