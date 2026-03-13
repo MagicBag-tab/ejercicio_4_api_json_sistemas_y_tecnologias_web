@@ -59,12 +59,8 @@ func genresHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 		case http.MethodGet:
 			handleGetGenre(w, r)
-		case http.MethodPut:
-			handleUpdateGenre(w, r)
-		case http.MethodPatch:
-			handlePatchGenre(w, r)
-		case http.MethodDelete:
-			handleDeleteGenre(w, r)
+		case http.MethodPost:
+			handleCreateGenre(w, r)
 		default:
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}
@@ -98,6 +94,55 @@ func handleGetGenres(w http.ResponseWriter, r *http.Request) {
 		genres = append(genres, g)
 	}
 	writeJSON(w, http.StatusOK, genres)
+}
+
+// Función para crear un nuevo género con POST /api/genres
+func handleCreateGenre(w http.ResponseWriter, r *http.Request) {
+	var g Genre
+	if err := json.NewDecoder(r.Body).Decode(&g); err != nil {
+		http.Error(w, "Invalid JSON body", http.StatusBadRequest)
+		return
+	}
+	if strings.TrimSpace(g.Name) == "" {
+		http.Error(w, "name is required", http.StatusBadRequest)
+		return
+	}
+	if strings.TrimSpace(g.Origin) == "" {
+		http.Error(w, "origin is required", http.StatusBadRequest)
+		return
+	}
+	if g.Decade < 1600 || g.Decade > 2030 {
+		http.Error(w, "decade must be between 1600 and 2030", http.StatusBadRequest)
+		return
+	}
+	if strings.TrimSpace(g.Mood) == "" {
+		http.Error(w, "mood is required", http.StatusBadRequest)
+		return
+	}
+	if strings.TrimSpace(g.Tempo) == "" {
+		http.Error(w, "tempo is required", http.StatusBadRequest)
+		return
+	}
+	if strings.TrimSpace(g.Description) == "" {
+		http.Error(w, "description is required", http.StatusBadRequest)
+		return
+	}
+ 
+	res, err := db.Exec(
+		"INSERT INTO genres (name, origin, decade, mood, tempo, description) VALUES (?, ?, ?, ?, ?, ?)",
+		g.Name, g.Origin, g.Decade, g.Mood, g.Tempo, g.Description,
+	)
+	if err != nil {
+		if strings.Contains(err.Error(), "UNIQUE") {
+			http.Error(w, "Genre name already exists", http.StatusConflict)
+			return
+		}
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	id, _ := res.LastInsertId()
+	g.ID = int(id)
+	writeJSON(w, http.StatusCreated, g)
 }
 
 func writeJSON(w http.ResponseWriter, status int, payload interface{}) {
