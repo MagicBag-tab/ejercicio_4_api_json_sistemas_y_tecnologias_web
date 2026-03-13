@@ -46,8 +46,7 @@ tiene un `id` y al menos 5 campos adicionales (name, origin, decade, mood, tempo
 - ✅ Dockerfile funcional.
 - ✅ Documentación clara con ejemplos de uso (este README).
 
-> **Nota:** El servidor corre por defecto en el puerto `80`. Cambie el número de puerto en
-> `main.go` si necesita usar el de su carnet.
+> **Nota:** El servidor corre por el puerto `24347`.
 
 ## Ejecutar el servidor
 
@@ -62,7 +61,7 @@ También puede construir la imagen y usar Docker:
 
 ```bash
 docker build -t genres-api .
-docker run -p 80:80 genres-api
+docker run -p 24347:24347 genres-api
 # o con docker-compose
 docker-compose up --build
 ```
@@ -71,10 +70,13 @@ Al iniciar verá en la consola:
 
 ```
 Connected to music.db
-Server running on :80
+Server running on :24347
 ```
+![Captura corriendo en Docker](images/server.png)
 
-![Captura del servidor corriendo](images/server.png)
+*(la siguiente captura muestra la API corriendo dentro de un servidor remoto llamado prendan el server)*
+
+![Captura del servidor corriendo](images/api_con_el_server.png)
 
 ## Endpoints disponibles
 
